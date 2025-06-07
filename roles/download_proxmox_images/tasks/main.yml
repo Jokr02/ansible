@@ -54,16 +54,20 @@
 - name: Extract latest Ubuntu LTS version directory
   set_fact:
     ubuntu_lts_version: >
-      {{ ubuntu_html.content
-         | regex_findall('href="([0-9]{2}\\.04)/"')
-         | default([])
-         | map('regex_replace', '\\.', '')
-         | map('int')
-         | sort
-         | last
-         | string
-         | regex_replace('(..)(..)', '\\1.\\2')
+      {{
+        ubuntu_html.content
+        | regex_findall('href="([0-9]{2}\\.[0-9]{2})/"')
+        | select('search', '\\.04')
+        | map('regex_replace', '\\.', '')
+        | map('int')
+        | list
+        | sort
+        | last | default(0)
+        | string
+        | regex_replace('(..)(..)', '\\1.\\2')
       }}
+  failed_when: ubuntu_lts_version == "00.00"
+
 
 
 - name: Build Ubuntu ISO URL
