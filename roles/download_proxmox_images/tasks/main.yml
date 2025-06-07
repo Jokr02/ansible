@@ -99,3 +99,35 @@
   command: "pveam download local {{ debian_lxc_template.stdout }}"
   args:
     chdir: /var/lib/vz/template/cache
+
+### --- Discord Notification ---
+
+- name: Send Discord notification
+  uri:
+    url: "{{ discordwebhook }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "username": "Proxmox ISO Downloader",
+        "embeds": [
+          {
+            "title": "✅ Proxmox ISO & LXC Templates aktualisiert",
+            "color": 65280,
+            "fields": [
+              {"name": "Ubuntu ISO", "value": "{{ ubuntu_iso_filename }}", "inline": true},
+              {"name": "Debian ISO", "value": "{{ debian_iso_filename }}", "inline": true},
+              {"name": "Ubuntu LXC", "value": "{{ ubuntu_lxc_template.stdout }}", "inline": true},
+              {"name": "Debian LXC", "value": "{{ debian_lxc_template.stdout }}", "inline": true}
+            ],
+            "timestamp": "{{ ansible_date_time.iso8601 }}"
+          }
+        ]
+      }
+    body_format: json
+    status_code: 204
+  delegate_to: localhost
+  run_once: true
+  ignore_errors: true
+
