@@ -1,5 +1,5 @@
 ---
-- name: Set directories and URLs
+- name: Set directories and base URLs
   set_fact:
     iso_dir: "/var/lib/vz/template/iso"
     lxc_dir: "/var/lib/vz/template/cache"
@@ -18,9 +18,9 @@
     state: directory
     mode: '0755'
 
-### --- Debian ISO (wie vorher, bleibt stabil) ---
+### --- Debian ISO ---
 
-- name: Fetch Debian ISO file listing
+- name: Fetch Debian ISO file list
   uri:
     url: "{{ debian_base_url }}"
     return_content: yes
@@ -34,20 +34,20 @@
   set_fact:
     debian_iso_url: "{{ debian_base_url }}{{ debian_iso_filename }}"
 
-- name: Download latest Debian ISO (if not exists)
+- name: Download latest Debian ISO (if not present)
   get_url:
     url: "{{ debian_iso_url }}"
     dest: "{{ iso_dir }}/{{ debian_iso_filename }}"
     mode: '0644'
     force: no
 
-### --- Ubuntu ISO (mit statischem Mapping, bleibt auch stabil) ---
+### --- Ubuntu ISO (static mapping for stability) ---
 
-- name: Define known supported Ubuntu LTS versions
+- name: Define supported Ubuntu LTS versions
   set_fact:
     ubuntu_lts_versions: [ '24.04', '22.04', '20.04', '18.04', '16.04' ]
 
-- name: Determine latest Ubuntu LTS version
+- name: Select latest Ubuntu LTS version
   set_fact:
     ubuntu_lts_version: "{{ ubuntu_lts_versions | sort | last }}"
 
@@ -60,7 +60,7 @@
       '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
       '16.04': "ubuntu-16.04.7-server-amd64.iso"
 
-- name: Determine Ubuntu ISO filename
+- name: Select Ubuntu ISO filename
   set_fact:
     ubuntu_iso_filename: "{{ ubuntu_iso_filenames[ubuntu_lts_version] }}"
 
@@ -68,14 +68,14 @@
   set_fact:
     ubuntu_iso_url: "{{ ubuntu_base_url }}{{ ubuntu_lts_version }}/{{ ubuntu_iso_filename }}"
 
-- name: Download latest Ubuntu ISO (if not exists)
+- name: Download latest Ubuntu ISO (if not present)
   get_url:
     url: "{{ ubuntu_iso_url }}"
     dest: "{{ iso_dir }}/{{ ubuntu_iso_filename }}"
     mode: '0644'
     force: no
 
-### --- LXC Templates automatisch via pveam ---
+### --- LXC Templates automatically via pveam ---
 
 - name: Update Proxmox LXC template list
   command: pveam update
@@ -113,7 +113,7 @@
         "username": "Proxmox ISO Downloader",
         "embeds": [
           {
-            "title": "✅ Proxmox ISO & LXC Templates aktualisiert",
+            "title": "✅ Proxmox ISO & LXC Templates updated",
             "color": 65280,
             "fields": [
               {"name": "Ubuntu ISO", "value": "{{ ubuntu_iso_filename }}", "inline": true},
@@ -131,5 +131,3 @@
   run_once: true
   ignore_errors: true
   become: false
-
-
