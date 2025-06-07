@@ -65,7 +65,7 @@
 
 - name: Determine latest Ubuntu LTS version
   set_fact:
-    ubuntu_lts_version: "{{ '%02d.%02d' | format((ubuntu_lts_versions | max // 0) // 100, (ubuntu_lts_versions | max // 0) % 100) }}"
+    ubuntu_lts_version: "{{ '%02d.%02d' | format(((ubuntu_lts_versions | default([0])) | max) // 100, ((ubuntu_lts_versions | default([0])) | max) % 100) }}"
 
 - name: Build Ubuntu ISO URL
   set_fact:
