@@ -1,0 +1,76 @@
+---
+- name: Smart ISO and LXC Downloader for Proxmox
+  hosts: proxmox
+  become: true
+
+  vars:
+    iso_dir: "/var/lib/vz/template/iso"
+    lxc_dir: "/var/lib/vz/template/cache"
+
+    ubuntu_api_url: "https://api.launchpad.net/1.0/ubuntu/series"
+    debian_base_url: "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"
+
+    ubuntu_lxc_url: "https://images.linuxcontainers.org/images/ubuntu/jammy/amd64/default/latest/rootfs.tar.xz"
+    debian_lxc_url: "https://images.linuxcontainers.org/images/debian/bookworm/amd64/default/latest/rootfs.tar.xz"
+
+  tasks:
+
+    - name: Ensure ISO directory exists
+      file:
+        path: "{{ iso_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Ensure LXC template directory exists
+      file:
+        path: "{{ lxc_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Fetch Debian ISO file listing
+      uri:
+        url: "{{ debian_base_url }}"
+        return_content: yes
+      register: debian_html
+
+    - name: Extract latest Debian netinst ISO filename
+      set_fact:
+        debian_iso_filename: "{{ debian_html.content | regex_search('debian-[0-9.]+-amd64-netinst\\.iso') }}"
+
+    - name: Build Debian ISO URL
+      set_fact:
+        debian_iso_url: "{{ debian_base_url }}{{ debian_iso_filename }}"
+
+    - name: Download latest Debian ISO
+      get_url:
+        url: "{{ debian_iso_url }}"
+        dest: "{{ iso_dir }}/{{ debian_iso_filename }}"
+        mode: '0644'
+        force: no
+
+    - name: Determine latest Ubuntu LTS ISO manually
+      set_fact:
+        ubuntu_iso_url: "https://releases.ubuntu.com/24.04/ubuntu-24.04-live-server-amd64.iso"
+
+      # Optional: You could automate this fully with a small external Python script or public Ubuntu API
+
+    - name: Download Ubuntu ISO
+      get_url:
+        url: "{{ ubuntu_iso_url }}"
+        dest: "{{ iso_dir }}/{{ ubuntu_iso_url | basename }}"
+        mode: '0644'
+        force: no
+
+    - name: Download Ubuntu LXC template
+      get_url:
+        url: "{{ ubuntu_lxc_url }}"
+        dest: "{{ lxc_dir }}/ubuntu-jammy-latest.tar.xz"
+        mode: '0644'
+        force: yes
+
+    - name: Download Debian LXC template
+      get_url:
+        url: "{{ debian_lxc_url }}"
+        dest: "{{ lxc_dir }}/debian-bookworm-latest.tar.xz"
+        mode: '0644'
+        force: yes
