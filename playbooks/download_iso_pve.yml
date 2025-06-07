@@ -1,5 +1,5 @@
 ---
-- name: Fully Automated ISO and LXC Downloader for Proxmox
+- name: Fully Automated ISO and LXC Downloader for Proxmox Homelab
   hosts: proxmox
   become: true
 
@@ -43,7 +43,7 @@
       set_fact:
         debian_iso_url: "{{ debian_base_url }}{{ debian_iso_filename }}"
 
-    - name: Download latest Debian ISO
+    - name: Download latest Debian ISO (if not exists)
       get_url:
         url: "{{ debian_iso_url }}"
         dest: "{{ iso_dir }}/{{ debian_iso_filename }}"
@@ -60,13 +60,13 @@
 
     - name: Extract latest Ubuntu LTS version directory
       set_fact:
-        ubuntu_lts_version: "{{ ubuntu_html.content | regex_search('href=\\\"([0-9]{2}\\.[0-9]{2})/\\\"', '\\1') | sort | last }}"
+        ubuntu_lts_version: "{{ ubuntu_html.content | regex_search('href=\\\"([0-9]{2}\\.[0-9]{2})/\\\"', '\\1') | select('match','^[0-9]{2}\\.04$') | sort | last }}"
 
     - name: Build Ubuntu ISO URL
       set_fact:
         ubuntu_iso_url: "{{ ubuntu_base_url }}{{ ubuntu_lts_version }}/ubuntu-{{ ubuntu_lts_version }}-live-server-amd64.iso"
 
-    - name: Download latest Ubuntu ISO
+    - name: Download latest Ubuntu ISO (if not exists)
       get_url:
         url: "{{ ubuntu_iso_url }}"
         dest: "{{ iso_dir }}/ubuntu-{{ ubuntu_lts_version }}-live-server-amd64.iso"
