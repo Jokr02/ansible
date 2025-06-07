@@ -43,7 +43,7 @@
     mode: '0644'
     force: no
 
-### --- Ubuntu ISO (statisch stabil) ---
+### --- Ubuntu ISO ---
 
 - name: Define known supported Ubuntu LTS versions
   set_fact:
@@ -53,14 +53,27 @@
   set_fact:
     ubuntu_lts_version: "{{ ubuntu_lts_versions | sort | last }}"
 
+- name: Define Ubuntu ISO filenames per LTS version
+  set_fact:
+    ubuntu_iso_filenames:
+      '24.04': "ubuntu-24.04.1-live-server-amd64.iso"
+      '22.04': "ubuntu-22.04.4-live-server-amd64.iso"
+      '20.04': "ubuntu-20.04.6-live-server-amd64.iso"
+      '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
+      '16.04': "ubuntu-16.04.7-server-amd64.iso"
+
+- name: Determine Ubuntu ISO filename
+  set_fact:
+    ubuntu_iso_filename: "{{ ubuntu_iso_filenames[ubuntu_lts_version] }}"
+
 - name: Build Ubuntu ISO URL
   set_fact:
-    ubuntu_iso_url: "{{ ubuntu_base_url }}{{ ubuntu_lts_version }}/ubuntu-{{ ubuntu_lts_version }}-live-server-amd64.iso"
+    ubuntu_iso_url: "{{ ubuntu_base_url }}{{ ubuntu_lts_version }}/{{ ubuntu_iso_filename }}"
 
 - name: Download latest Ubuntu ISO (if not exists)
   get_url:
     url: "{{ ubuntu_iso_url }}"
-    dest: "{{ iso_dir }}/ubuntu-{{ ubuntu_lts_version }}-live-server-amd64.iso"
+    dest: "{{ iso_dir }}/{{ ubuntu_iso_filename }}"
     mode: '0644'
     force: no
 
