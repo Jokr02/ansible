@@ -56,7 +56,7 @@
 - name: Define Ubuntu ISO filenames per LTS version
   set_fact:
     ubuntu_iso_filenames:
-      '24.04': "ubuntu-24.04.1-live-server-amd64.iso"
+      '24.04': "ubuntu-24.04.2-live-server-amd64.iso"
       '22.04': "ubuntu-22.04.4-live-server-amd64.iso"
       '20.04': "ubuntu-20.04.6-live-server-amd64.iso"
       '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
