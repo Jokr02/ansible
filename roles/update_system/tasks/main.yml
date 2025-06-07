@@ -1,1 +1,17 @@
+---
+- name: Upgrade packages
+  apt:
+    name: "*"
+    state: latest
+    update_cache: yes
+  register: upgrade_result
+  ignore_errors: true
+
+- name: Set upgrade result
+  set_fact:
+    upgrade_status: "{{ 'success' if upgrade_result is succeeded else 'failed' }}"
+
+- name: Set timestamp
+  set_fact:
+    upgrade_timestamp: "{{ ansible_date_time.date }} {{ ansible_date_time.time }}"
 
