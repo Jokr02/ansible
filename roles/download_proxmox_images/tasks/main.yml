@@ -18,7 +18,7 @@
     state: directory
     mode: '0755'
 
-### --- Debian ISO ---
+### --- Debian ISO (wie vorher, bleibt stabil) ---
 
 - name: Fetch Debian ISO file listing
   uri:
@@ -41,7 +41,7 @@
     mode: '0644'
     force: no
 
-### --- Ubuntu ISO ---
+### --- Ubuntu ISO (mit statischem Mapping, bleibt auch stabil) ---
 
 - name: Define known supported Ubuntu LTS versions
   set_fact:
@@ -75,17 +75,27 @@
     mode: '0644'
     force: no
 
-### --- LXC Templates via pveam ---
+### --- LXC Templates automatisch via pveam ---
 
 - name: Update Proxmox LXC template list
   command: pveam update
 
-- name: Download Ubuntu 22.04 LXC template via Proxmox
-  command: pveam download local ubuntu-22.04-standard_20240501_amd64.tar.zst
+- name: Find latest Ubuntu 22.04 LXC template
+  shell: "pveam available | grep ubuntu-22.04-standard | sort | tail -n 1 | awk '{print $2}'"
+  register: ubuntu_lxc_template
+  changed_when: false
+
+- name: Download Ubuntu 22.04 LXC template
+  command: "pveam download local {{ ubuntu_lxc_template.stdout }}"
   args:
     chdir: /var/lib/vz/template/cache
 
-- name: Download Debian 12 LXC template via Proxmox
-  command: pveam download local debian-12-standard_20240501_amd64.tar.zst
+- name: Find latest Debian 12 LXC template
+  shell: "pveam available | grep debian-12-standard | sort | tail -n 1 | awk '{print $2}'"
+  register: debian_lxc_template
+  changed_when: false
+
+- name: Download Debian 12 LXC template
+  command: "pveam download local {{ debian_lxc_template.stdout }}"
   args:
     chdir: /var/lib/vz/template/cache
