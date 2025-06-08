@@ -1,0 +1,45 @@
+---
+- name: Gather facts
+  setup:
+
+- name: Create ZFS snapshot before update
+  command: "zfs snapshot rpool/ROOT/pve-1@pre-update-{{ ansible_date_time.iso8601_basic }}"
+  ignore_errors: true  # Falls kein ZFS vorhanden
+
+- name: Update package list
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: dist
+  register: upgrade_result
+
+- name: Send Discord notification
+  uri:
+    url: "{{ discordwebhook }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "username": "Proxmox Update",
+        "embeds": [
+          {
+            "title": "✅ Proxmox Host Updated",
+            "color": 65280,
+            "fields": [
+              {"name": "Hostname", "value": "{{ inventory_hostname }}", "inline": true},
+              {"name": "Kernel", "value": "{{ ansible_kernel }}", "inline": true},
+              {"name": "Update Result", "value": "{{ upgrade_result.stdout if upgrade_result.stdout is defined else 'No stdout' }}", "inline": false}
+            ],
+            "timestamp": "{{ ansible_date_time.iso8601 }}"
+          }
+        ]
+      }
+    body_format: json
+    status_code: 204
+  delegate_to: localhost
+  run_once: true
+  ignore_errors: true
+  become: false
