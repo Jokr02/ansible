@@ -1,20 +1,31 @@
 ---
-- name: Gather facts
+- name: Gather system facts
   setup:
 
+# Optional: Check if ZFS exists on system
+- name: Check if ZFS is installed
+  stat:
+    path: /sbin/zfs
+  register: zfs_check
+
+# Optional: Create ZFS snapshot only if ZFS exists
 - name: Create ZFS snapshot before update
   command: "zfs snapshot rpool/ROOT/pve-1@pre-update-{{ ansible_date_time.iso8601_basic }}"
-  ignore_errors: true  # Falls kein ZFS vorhanden
+  when: zfs_check.stat.exists
+  ignore_errors: true
 
-- name: Update package list
+# Update package lists
+- name: Update APT package index
   apt:
     update_cache: yes
 
-- name: Upgrade all packages
+# Perform full system upgrade
+- name: Upgrade all packages (dist-upgrade)
   apt:
     upgrade: dist
   register: upgrade_result
 
+# Send Discord Notification
 - name: Send Discord notification
   uri:
     url: "{{ discordwebhook }}"
@@ -31,7 +42,7 @@
             "fields": [
               {"name": "Hostname", "value": "{{ inventory_hostname }}", "inline": true},
               {"name": "Kernel", "value": "{{ ansible_kernel }}", "inline": true},
-              {"name": "Update Result", "value": "{{ upgrade_result.stdout if upgrade_result.stdout is defined else 'No stdout' }}", "inline": false}
+              {"name": "Changes Applied", "value": "{{ 'Yes' if upgrade_result.changed else 'No' }}", "inline": true}
             ],
             "timestamp": "{{ ansible_date_time.iso8601 }}"
           }
