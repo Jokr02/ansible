@@ -1,0 +1,7 @@
+---
+- name: Cleanup Proxmox ISO and LXC Templates
+  hosts: proxmox
+  become: true
+
+  roles:
+    - cleanup_proxmox_templates
