@@ -1,11 +1,4 @@
 ---
-- name: Set directories and base URLs
-  set_fact:
-    iso_dir: "/var/lib/vz/template/iso"
-    lxc_dir: "/var/lib/vz/template/cache"
-    ubuntu_base_url: "https://releases.ubuntu.com/"
-    debian_base_url: "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"
-
 - name: Ensure ISO directory exists
   file:
     path: "{{ iso_dir }}"
@@ -41,24 +34,11 @@
     mode: '0644'
     force: no
 
-### --- Ubuntu ISO (static mapping for stability) ---
-
-- name: Define supported Ubuntu LTS versions
-  set_fact:
-    ubuntu_lts_versions: [ '24.04', '22.04', '20.04', '18.04', '16.04' ]
+### --- Ubuntu ISO ---
 
 - name: Select latest Ubuntu LTS version
   set_fact:
     ubuntu_lts_version: "{{ ubuntu_lts_versions | sort | last }}"
-
-- name: Define Ubuntu ISO filenames per LTS version
-  set_fact:
-    ubuntu_iso_filenames:
-      '24.04': "ubuntu-24.04.2-live-server-amd64.iso"
-      '22.04': "ubuntu-22.04.4-live-server-amd64.iso"
-      '20.04': "ubuntu-20.04.6-live-server-amd64.iso"
-      '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
-      '16.04': "ubuntu-16.04.7-server-amd64.iso"
 
 - name: Select Ubuntu ISO filename
   set_fact:
@@ -75,7 +55,7 @@
     mode: '0644'
     force: no
 
-### --- LXC Templates automatically via pveam ---
+### --- LXC Templates via pveam ---
 
 - name: Update Proxmox LXC template list
   command: pveam update
@@ -88,7 +68,7 @@
 - name: Download Ubuntu 22.04 LXC template
   command: "pveam download local {{ ubuntu_lxc_template.stdout }}"
   args:
-    chdir: /var/lib/vz/template/cache
+    chdir: "{{ lxc_dir }}"
 
 - name: Find latest Debian 12 LXC template
   shell: "pveam available | grep debian-12-standard | sort | tail -n 1 | awk '{print $2}'"
@@ -98,7 +78,7 @@
 - name: Download Debian 12 LXC template
   command: "pveam download local {{ debian_lxc_template.stdout }}"
   args:
-    chdir: /var/lib/vz/template/cache
+    chdir: "{{ lxc_dir }}"
 
 ### --- Discord Notification ---
 
