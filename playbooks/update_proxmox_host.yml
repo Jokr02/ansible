@@ -1,0 +1,7 @@
+---
+- name: Update Proxmox Host with Snapshots and Discord Notification
+  hosts: proxmox
+  become: true
+
+  roles:
+    - proxmox_update
