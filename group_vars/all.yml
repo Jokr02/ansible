@@ -1,0 +1,19 @@
+# global group vars
+
+# ISO storage paths
+iso_dir: "/var/lib/vz/template/iso"
+lxc_dir: "/var/lib/vz/template/cache"
+
+# base URLs
+ubuntu_base_url: "https://releases.ubuntu.com/"
+debian_base_url: "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"
+
+# Ubuntu LTS versions mapping
+ubuntu_lts_versions: ['24.04', '22.04', '20.04', '18.04', '16.04']
+
+ubuntu_iso_filenames:
+  '24.04': "ubuntu-24.04.2-live-server-amd64.iso"
+  '22.04': "ubuntu-22.04.4-live-server-amd64.iso"
+  '20.04': "ubuntu-20.04.6-live-server-amd64.iso"
+  '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
+  '16.04': "ubuntu-16.04.7-server-amd64.iso"
