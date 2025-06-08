@@ -43,3 +43,34 @@
     state: absent
   loop: "{{ lxc_files_sorted[keep_lxc_count:] }}"
   when: lxc_files_sorted | length > keep_lxc_count
+
+# Discord Notification
+
+- name: Send Discord cleanup notification
+  uri:
+    url: "{{ discordwebhook }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "username": "Proxmox Cleanup",
+        "embeds": [
+          {
+            "title": "🧹 Proxmox Template Cleanup Completed",
+            "color": 3447003,
+            "fields": [
+              {"name": "ISO files kept", "value": "{{ keep_iso_count }}", "inline": true},
+              {"name": "LXC templates kept", "value": "{{ keep_lxc_count }}", "inline": true},
+              {"name": "Host", "value": "{{ inventory_hostname }}", "inline": true}
+            ],
+            "timestamp": "{{ ansible_date_time.iso8601 }}"
+          }
+        ]
+      }
+    body_format: json
+    status_code: 204
+  delegate_to: localhost
+  run_once: true
+  ignore_errors: true
+  become: false
