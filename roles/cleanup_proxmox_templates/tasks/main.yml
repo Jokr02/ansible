@@ -1,0 +1,45 @@
+---
+# Variables: how many files to keep
+- set_fact:
+    keep_iso_count: 2
+    keep_lxc_count: 2
+
+# ISO Cleanup
+
+- name: Find all ISOs
+  find:
+    paths: "{{ iso_dir }}"
+    patterns: "*.iso"
+    recurse: no
+  register: iso_files
+
+- name: Sort ISOs by modification time (newest first)
+  set_fact:
+    iso_files_sorted: "{{ iso_files.files | sort(attribute='mtime', reverse=True) }}"
+
+- name: Remove old ISOs
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ iso_files_sorted[keep_iso_count:] }}"
+  when: iso_files_sorted | length > keep_iso_count
+
+# LXC Template Cleanup
+
+- name: Find all LXC templates
+  find:
+    paths: "{{ lxc_dir }}"
+    patterns: "*.tar.zst"
+    recurse: no
+  register: lxc_files
+
+- name: Sort LXC templates by modification time (newest first)
+  set_fact:
+    lxc_files_sorted: "{{ lxc_files.files | sort(attribute='mtime', reverse=True) }}"
+
+- name: Remove old LXC templates
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ lxc_files_sorted[keep_lxc_count:] }}"
+  when: lxc_files_sorted | length > keep_lxc_count
