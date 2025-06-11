@@ -3,6 +3,16 @@
   vars:
     discordwebhook: "{{ discordwebhook }}"  # kommt aus Semaphore Variables
   tasks:
+    - name: Get list of upgradable packages
+      command: apt list --upgradable
+      register: apt_list_output
+      changed_when: false
+      failed_when: false
+
+    - name: Store list of available updates
+      set_fact:
+        available_updates: "{{ apt_list_output.stdout_lines | select('match', '^[^Listing].*') | list }}"
+
     - name: Upgrade all installed packages on Debian and Ubuntu
       apt:
         name: "*"
@@ -17,7 +27,7 @@
       when: ansible_distribution in ['Ubuntu', 'Debian']
       register: upgrade_result
       ignore_errors: true
-
+    
     - name: Set upgrade result fact
       set_fact:
         upgrade_status: "{{ 'success' if upgrade_result is succeeded else 'failed' }}"
@@ -25,6 +35,9 @@
     - name: Set timestamp
       set_fact:
         upgrade_timestamp: "{{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+    - name: Extract installed updates from stdout
+      set_fact:
+        installed_updates: "{{ upgrade_result.stdout_lines | default([]) }}"
 
 - hosts: localhost
   gather_facts: false
