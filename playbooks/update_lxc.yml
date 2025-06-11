@@ -35,9 +35,6 @@
     - name: Set timestamp
       set_fact:
         upgrade_timestamp: "{{ ansible_date_time.date }} {{ ansible_date_time.time }}"
-    - name: Extract installed updates from stdout
-      set_fact:
-        installed_updates: "{{ upgrade_result.stdout_lines | default([]) }}"
 
 - hosts: localhost
   gather_facts: false
