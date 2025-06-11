@@ -54,3 +54,23 @@
   retries: 3
   delay: 5
   until: result is succeeded
+- name: Build upgrade summary with details
+  set_fact:
+    upgrade_summary: |
+      {% for item in target_group %}
+      **{{ item }}**
+      Status: {{ '✅ Success' if hostvars[item]['upgrade_status'] == 'success' else '❌ Failed' }}
+      {% if hostvars[item]['available_updates'] | length > 0 %}
+      📦 *Verfügbare Updates:*
+      {{ hostvars[item]['available_updates'] | join('\n') }}
+      {% else %}
+      📦 Keine verfügbaren Updates
+      {% endif %}
+      {% if hostvars[item]['installed_updates'] | length > 0 %}
+      🔧 *Installierte Updates:*
+      {{ hostvars[item]['installed_updates'] | join('\n') }}
+      {% else %}
+      🔧 Keine Updates durchgeführt
+      {% endif %}
+      
+      {% endfor %}
