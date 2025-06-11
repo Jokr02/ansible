@@ -15,3 +15,22 @@
   set_fact:
     upgrade_timestamp: "{{ ansible_date_time.date }} {{ ansible_date_time.time }}"
 
+- name: Get list of available upgrades
+  command: apt list --upgradable
+  register: upgradable_list
+  changed_when: false
+  failed_when: false
+
+- name: Perform upgrade
+  apt:
+    upgrade: dist
+    update_cache: true
+  register: apt_upgrade
+  failed_when: false
+
+- name: Set upgrade result
+  set_fact:
+    upgrade_status: "{{ 'success' if apt_upgrade.failed == false else 'failed' }}"
+    upgrade_timestamp: "{{ ansible_date_time.iso8601 }}"
+    available_updates: "{{ upgradable_list.stdout_lines | default([]) }}"
+    installed_updates: "{{ apt_upgrade.stdout_lines | default([]) }}"
