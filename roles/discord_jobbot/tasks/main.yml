@@ -28,11 +28,16 @@
   args:
     creates: "{{ app_dir }}/venv"
 
-- name: Install Python requirements if file exists
+- name: Check if requirements.txt exists
+  stat:
+    path: "{{ app_dir }}/requirements.txt"
+  register: req_file
+
+- name: Install Python requirements if requirements.txt exists
   pip:
     requirements: "{{ app_dir }}/requirements.txt"
     executable: "{{ app_dir }}/venv/bin/pip"
-  when: ansible.builtin.stat(path="{{ app_dir }}/requirements.txt").stat.exists
+  when: req_file.stat.exists
 
 - name: Install required Python packages explicitly
   pip:
