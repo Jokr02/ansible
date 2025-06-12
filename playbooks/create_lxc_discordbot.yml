@@ -1,38 +1,49 @@
 ---
-# playbooks/create_lxc_discordbot.yml
-- name: Create and configure LXC for Discord Bot
+- name: Provision LXC and Deploy Generic Discord Bot
   hosts: proxmox
   become: true
   vars:
-    lxc_id: 106
+    lxc_id: 202
     lxc_hostname: discord-bot
-    lxc_template: local:vztmpl/ubuntu-22.04-standard_20240501_amd64.tar.zst
+    lxc_password: "changeme"
+    lxc_template: "local:vztmpl/debian-12-standard_20240430_amd64.tar.zst"
     lxc_storage: local-lvm
-    lxc_password: discordbot
-    lxc_bridge: vmbr0
-    lxc_ip: ''
-    lxc_cores: 2
-    lxc_memory: 1024
-    lxc_disk: 8
-  roles:
-    - create_lxc
+    lxc_disk: 4
+    lxc_ram: 512
+    lxc_cores: 1
+    lxc_net: name=eth0,bridge=vmbr0,ip=dhcp
+  tasks:
+    - name: Create LXC container
+      community.general.proxmox:
+        api_user: root@pam
+        api_password: "{{ proxmox_password }}"
+        api_host: "{{ inventory_hostname }}"
+        vmid: "{{ lxc_id }}"
+        hostname: "{{ lxc_hostname }}"
+        password: "{{ lxc_password }}"
+        ostemplate: "{{ lxc_template }}"
+        storage: "{{ lxc_storage }}"
+        cores: "{{ lxc_cores }}"
+        memory: "{{ lxc_ram }}"
+        netif: "{{ lxc_net }}"
+        disk: "{{ lxc_disk }}"
+        state: present
+        validate_certs: no
 
-- name: Setup Discord Bot inside LXC
-  hosts: discord_bot
+    - name: Start LXC
+      community.general.proxmox:
+        api_user: root@pam
+        api_password: "{{ proxmox_password }}"
+        api_host: "{{ inventory_hostname }}"
+        vmid: "{{ lxc_id }}"
+        state: started
+        validate_certs: no
+
+- name: Configure Generic Discord Bot inside LXC
+  hosts: discord_lxc
   become: true
   vars:
-    ansible_python_interpreter: /usr/bin/python3
-    discord_token: "YOUR_TOKEN_HERE"
-    bot_repo: ""
+    discord_token: "{{ vault_discord_token }}"
+    discord_channel_id: "123456789012345678"
   roles:
-    - discord_bot
-
-- name: Notify via Discord Webhook
-  hosts: localhost
-  gather_facts: false
-  vars:
-    discordwebhook: "YOUR_DISCORD_WEBHOOK_URL"
-    notification_title: "Discord Bot Deployment"
-    embed_message: "Discord Bot LXC {{ lxc_hostname }} was created and configured."
-  roles:
-    - discord_notify
+    - configure_discord_bot
