@@ -1,49 +1,14 @@
 ---
-- name: Provision LXC and Deploy Generic Discord Bot
-  hosts: proxmox
-  become: true
-  vars:
-    lxc_id: 202
-    lxc_hostname: discord-bot
-    lxc_password: "changeme"
-    lxc_template: "local:vztmpl/debian-12-standard_20240430_amd64.tar.zst"
-    lxc_storage: local-lvm
-    lxc_disk: 4
-    lxc_ram: 512
-    lxc_cores: 1
-    lxc_net: name=eth0,bridge=vmbr0,ip=dhcp
-  tasks:
-    - name: Create LXC container
-      community.general.proxmox:
-        api_user: root@pam
-        api_password: "{{ proxmox_password }}"
-        api_host: "{{ inventory_hostname }}"
-        vmid: "{{ lxc_id }}"
-        hostname: "{{ lxc_hostname }}"
-        password: "{{ lxc_password }}"
-        ostemplate: "{{ lxc_template }}"
-        storage: "{{ lxc_storage }}"
-        cores: "{{ lxc_cores }}"
-        memory: "{{ lxc_ram }}"
-        netif: "{{ lxc_net }}"
-        disk: "{{ lxc_disk }}"
-        state: present
-        validate_certs: no
-
-    - name: Start LXC
-      community.general.proxmox:
-        api_user: root@pam
-        api_password: "{{ proxmox_password }}"
-        api_host: "{{ inventory_hostname }}"
-        vmid: "{{ lxc_id }}"
-        state: started
-        validate_certs: no
-
-- name: Configure Generic Discord Bot inside LXC
+- name: Deploy and configure a Discord bot in LXC
   hosts: discord_lxc
   become: true
   vars:
-    discord_token: "{{ vault_discord_token }}"
-    discord_channel_id: "123456789012345678"
+    discord_bot_repo: "https://github.com/dein-benutzername/dein-discord-bot.git"
+    discord_bot_directory: "/opt/discord-bot"
+    discord_bot_user: "discordbot"
+    discord_bot_python_version: "3.11"
+    discord_bot_service_name: "discord-bot"
+    discordwebhook: "{{ discordwebhook }}"
+
   roles:
     - configure_discord_bot
