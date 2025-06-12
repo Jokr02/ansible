@@ -1,12 +1,12 @@
-- name: Ensure required packages
+- name: Ensure required system packages
   apt:
-    name: "{{ item }}"
+    name:
+      - git
+      - python3-venv
+      - python3-packaging
+      - curl
     state: present
     update_cache: yes
-  loop:
-    - git
-    - python3-venv
-    - python3-packaging
 
 - name: Create code directory if not exists
   file:
@@ -25,13 +25,15 @@
   args:
     creates: "{{ jobbot_path }}/venv"
 
-- name: Install pip in venv (if missing)
-  command: "{{ jobbot_path }}/venv/bin/python3 -m ensurepip"
+- name: Download get-pip.py
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/get-pip.py
+
+- name: Install pip in venv using get-pip.py
+  command: "{{ jobbot_path }}/venv/bin/python3 /tmp/get-pip.py"
   args:
     creates: "{{ jobbot_path }}/venv/bin/pip"
-
-- name: Upgrade pip in venv
-  command: "{{ jobbot_path }}/venv/bin/pip install --upgrade pip"
 
 - name: Install Python requirements
   pip:
