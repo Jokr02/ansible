@@ -8,6 +8,11 @@
     state: present
     update_cache: yes
 
+- name: Remove old venv to ensure clean install
+  file:
+    path: "{{ jobbot_path }}/venv"
+    state: absent
+
 - name: Create code directory if not exists
   file:
     path: "{{ jobbot_code_path }}"
