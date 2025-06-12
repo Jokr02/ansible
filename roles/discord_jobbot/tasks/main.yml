@@ -33,6 +33,17 @@
     requirements: "{{ app_dir }}/requirements.txt"
     executable: "{{ app_dir }}/venv/bin/pip"
 
+- name: Install missing Python modules explicitly
+  pip:
+    name:
+      - psutil
+      - python-dotenv
+      - requests
+      - fpdf
+      - beautifulsoup4
+      - discord.py
+    executable: "{{ app_dir }}/venv/bin/pip"
+
 - name: Render .env file from template
   template:
     src: env.j2
