@@ -7,7 +7,7 @@
 - name: Clone or update the JobBot repo
   git:
     repo: "{{ jobbot_repo_url }}"
-    dest: "{{ jobbot_path }}"
+    dest: "{{ jobbot_code_path }}"
     version: main
     force: yes
 
