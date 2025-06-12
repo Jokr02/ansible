@@ -47,7 +47,7 @@
       #!/bin/bash
       cd "{{ app_dir }}"
       source venv/bin/activate
-      python3 bot_final_corrected_and_ordered.py
+      python3 bot.py
 
 - name: Install systemd service for Discord Bot
   copy:
@@ -61,7 +61,7 @@
       [Service]
       Type=simple
       WorkingDirectory={{ app_dir }}
-      ExecStart={{ app_dir }}/venv/bin/python3 {{ app_dir }}/bot_final_corrected_and_ordered.py
+      ExecStart={{ app_dir }}/venv/bin/python3 {{ app_dir }}/bot.py
       EnvironmentFile={{ app_dir }}/.env
       Restart=always
       User=root
