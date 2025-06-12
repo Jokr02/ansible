@@ -4,13 +4,11 @@
     name:
       - python3
       - python3-pip
+      - python3-venv
       - git
       - libjpeg-dev
       - build-essential
     update_cache: yes
-- name: Install virtualenv via pip
-  pip:
-    name: virtualenv
 
 - name: Ensure application directory exists
   file:
@@ -25,11 +23,15 @@
     version: main
     force: yes
 
-- name: Install Python dependencies
+- name: Create Python virtual environment using python3-venv
+  command: python3 -m venv {{ app_dir }}/venv
+  args:
+    creates: "{{ app_dir }}/venv"
+
+- name: Install Python requirements in virtualenv
   pip:
     requirements: "{{ app_dir }}/requirements.txt"
-    virtualenv: "{{ app_dir }}/venv"
-    virtualenv_python: python3
+    executable: "{{ app_dir }}/venv/bin/pip"
 
 - name: Render .env file from template
   template:
