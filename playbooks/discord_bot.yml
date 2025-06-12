@@ -1,0 +1,85 @@
+---
+- name: Setup Discord Bot on LXC container
+  hosts: discord_bot
+  become: yes
+
+  vars:
+    bot_user: discordbot
+    bot_home: /opt/discord-bot
+    python_version: "3.10"
+
+  tasks:
+    - name: Ensure required packages are installed
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - git
+          - curl
+        state: present
+        update_cache: yes
+
+    - name: Create a system user for the bot
+      user:
+        name: "{{ bot_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Create bot directory
+      file:
+        path: "{{ bot_home }}"
+        state: directory
+        owner: "{{ bot_user }}"
+        group: "{{ bot_user }}"
+        mode: 0755
+
+    - name: Clone bot repo placeholder
+      git:
+        repo: https://example.com/your-bot-repo.git
+        dest: "{{ bot_home }}"
+        version: main
+        update: yes
+      become_user: "{{ bot_user }}"
+      ignore_errors: yes  # Entferne später, wenn Repo steht
+
+    - name: Create Python virtual environment
+      command: python3 -m venv venv
+      args:
+        chdir: "{{ bot_home }}"
+      become_user: "{{ bot_user }}"
+
+    - name: Install bot dependencies
+      pip:
+        requirements: "{{ bot_home }}/requirements.txt"
+        virtualenv: "{{ bot_home }}/venv"
+      become_user: "{{ bot_user }}"
+      ignore_errors: yes  # Nur sinnvoll, wenn requirements.txt da ist
+
+    - name: Create systemd service for bot
+      copy:
+        dest: /etc/systemd/system/discord-bot.service
+        content: |
+          [Unit]
+          Description=Discord Bot Service
+          After=network.target
+
+          [Service]
+          Type=simple
+          User={{ bot_user }}
+          WorkingDirectory={{ bot_home }}
+          ExecStart={{ bot_home }}/venv/bin/python bot.py
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start the bot service
+      systemd:
+        name: discord-bot
+        enabled: yes
+        state: started
