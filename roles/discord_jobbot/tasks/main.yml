@@ -1,65 +1,72 @@
-- name: Ensure required system packages
+---
+- name: Install required system packages
   apt:
     name:
+      - python3
+      - python3-pip
       - git
-      - python3-venv
-      - python3-packaging
-      - curl
-    state: present
+      - libjpeg-dev
+      - build-essential
     update_cache: yes
 
-- name: Remove old venv to ensure clean install
+- name: Ensure application directory exists
   file:
-    path: "{{ jobbot_path }}/venv"
-    state: absent
-
-- name: Create code directory if not exists
-  file:
-    path: "{{ jobbot_code_path }}"
+    path: "{{ app_dir }}"
     state: directory
+    mode: '0755'
 
-- name: Git checkout into code/
+- name: Clone Discord JobBot repository
   git:
-    repo: "{{ jobbot_repo_url }}"
-    dest: "{{ jobbot_code_path }}"
+    repo: "{{ repo_url }}"
+    dest: "{{ app_dir }}"
     version: main
     force: yes
 
-- name: Create virtual environment
-  shell: python3 -m venv {{ jobbot_path }}/venv
-  args:
-    creates: "{{ jobbot_path }}/venv"
-
-- name: Download get-pip.py into venv folder
-  get_url:
-    url: https://bootstrap.pypa.io/get-pip.py
-    dest: "{{ jobbot_path }}/venv/get-pip.py"
-
-- name: Install pip manually in venv
-  shell: "{{ jobbot_path }}/venv/bin/python3 {{ jobbot_path }}/venv/get-pip.py"
-  args:
-    creates: "{{ jobbot_path }}/venv/bin/pip"
-
-- name: Install Python requirements
+- name: Install Python dependencies
   pip:
-    requirements: "{{ jobbot_code_path }}/requirements.txt"
-    executable: "{{ jobbot_path }}/venv/bin/pip"
+    requirements: "{{ app_dir }}/requirements.txt"
+    virtualenv: "{{ app_dir }}/venv"
+    virtualenv_python: python3
 
-- name: Deploy .env from template
+- name: Render .env file from template
   template:
     src: env.j2
-    dest: "{{ jobbot_path }}/.env"
-    mode: "0600"
+    dest: "{{ app_dir }}/.env"
+    mode: '0600'
 
-- name: Copy systemd service
+- name: Create start script
   copy:
-    src: jobbot.service
-    dest: /etc/systemd/system/jobbot.service
-    mode: "0644"
+    dest: "{{ app_dir }}/start.sh"
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      cd "{{ app_dir }}"
+      source venv/bin/activate
+      python3 bot_final_corrected_and_ordered.py
 
-- name: Reload and start JobBot service
+- name: Install systemd service for Discord Bot
+  copy:
+    dest: /etc/systemd/system/discord-jobbot.service
+    mode: '0644'
+    content: |
+      [Unit]
+      Description=Discord JobBot Service
+      After=network.target
+
+      [Service]
+      Type=simple
+      WorkingDirectory={{ app_dir }}
+      ExecStart={{ app_dir }}/venv/bin/python3 {{ app_dir }}/bot_final_corrected_and_ordered.py
+      EnvironmentFile={{ app_dir }}/.env
+      Restart=always
+      User=root
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd and enable the bot service
   systemd:
-    name: jobbot.service
-    enabled: true
-    state: restarted
-    daemon_reload: true
+    daemon_reload: yes
+    name: discord-jobbot
+    enabled: yes
+    state: started
