@@ -6,6 +6,7 @@
   loop:
     - git
     - python3-venv
+    - python3-packaging
 
 - name: Create code directory if not exists
   file:
@@ -16,6 +17,7 @@
   git:
     repo: "{{ jobbot_repo_url }}"
     dest: "{{ jobbot_code_path }}"
+    version: main
     force: yes
 
 - name: Create virtual environment
@@ -23,11 +25,13 @@
   args:
     creates: "{{ jobbot_path }}/venv"
 
-- name: Install required Python packaging library
-  apt:
-    name: python3-packaging
-    state: present
-    update_cache: yes
+- name: Install pip in venv (if missing)
+  command: "{{ jobbot_path }}/venv/bin/python3 -m ensurepip"
+  args:
+    creates: "{{ jobbot_path }}/venv/bin/pip"
+
+- name: Upgrade pip in venv
+  command: "{{ jobbot_path }}/venv/bin/pip install --upgrade pip"
 
 - name: Install Python requirements
   pip:
