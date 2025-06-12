@@ -38,7 +38,7 @@
 - name: Install Python requirements
   pip:
     requirements: "{{ jobbot_code_path }}/requirements.txt"
-    virtualenv: "{{ jobbot_path }}/venv"
+    executable: "{{ jobbot_path }}/venv/bin/pip"
 
 - name: Deploy .env from template
   template:
