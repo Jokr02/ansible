@@ -2,7 +2,7 @@
   hosts: jobbot
   become: true
   vars:
-    jobbot_repo_url: "https://github.com/deinuser/job_bot.git"
+    jobbot_repo_url: "https://github.com/Jokr02/job_bot.git"
     jobbot_path: "/opt/discord-jobbot"
   roles:
     - discord_jobbot
