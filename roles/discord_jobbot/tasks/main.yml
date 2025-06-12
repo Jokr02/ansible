@@ -20,7 +20,7 @@
   command: python3 -m venv venv
   args:
     chdir: "{{ jobbot_path }}"
-  creates: "{{ jobbot_path }}/venv"
+    creates: "{{ jobbot_path }}/venv"
 
 - name: Install Python requirements
   pip:
