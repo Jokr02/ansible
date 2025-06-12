@@ -1,43 +1,49 @@
-- name: Ensure git is installed
+- name: Ensure required packages
   apt:
-    name: git
+    name: "{{ item }}"
     state: present
-    update_cache: true
+    update_cache: yes
+  loop:
+    - git
+    - python3-venv
 
-- name: Clone or update the JobBot repo
+- name: Create code directory if not exists
+  file:
+    path: "{{ jobbot_code_path }}"
+    state: directory
+
+- name: Git checkout into code/
   git:
     repo: "{{ jobbot_repo_url }}"
     dest: "{{ jobbot_code_path }}"
     version: main
     force: yes
 
-- name: Ensure virtualenv is present
-  apt:
-    name: python3-venv
-    state: present
-
 - name: Create virtual environment
-  shell: python3 -m venv venv
+  shell: python3 -m venv {{ jobbot_path }}/venv
   args:
-    chdir: "{{ jobbot_path }}"
     creates: "{{ jobbot_path }}/venv"
 
 - name: Install Python requirements
   pip:
-    requirements: "{{ jobbot_path }}/requirements.txt"
+    requirements: "{{ jobbot_code_path }}/requirements.txt"
     virtualenv: "{{ jobbot_path }}/venv"
 
-- name: Deploy .env file from template
+- name: Deploy .env from template
   template:
     src: env.j2
     dest: "{{ jobbot_path }}/.env"
     mode: "0600"
 
-- name: Start bot (nohup style)
-  shell: |
-    source venv/bin/activate
-    nohup python3 bot.py > bot.log 2>&1 &
-  args:
-    chdir: "{{ jobbot_path }}"
-  async: 10
-  poll: 0
+- name: Copy systemd service
+  copy:
+    src: jobbot.service
+    dest: /etc/systemd/system/jobbot.service
+    mode: "0644"
+
+- name: Reload and start JobBot service
+  systemd:
+    name: jobbot.service
+    enabled: true
+    state: restarted
+    daemon_reload: true
