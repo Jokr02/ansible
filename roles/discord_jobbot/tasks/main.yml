@@ -17,7 +17,7 @@
     state: present
 
 - name: Create virtual environment
-  command: python3 -m venv venv
+  shell: python3 -m venv venv
   args:
     chdir: "{{ jobbot_path }}"
     creates: "{{ jobbot_path }}/venv"
