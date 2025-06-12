@@ -17,7 +17,6 @@
     repo: "{{ jobbot_repo_url }}"
     dest: "{{ jobbot_code_path }}"
     force: yes
-    timeout: 60
 
 
 - name: Create virtual environment
