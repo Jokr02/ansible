@@ -1,0 +1,38 @@
+---
+# playbooks/create_lxc_discordbot.yml
+- name: Create and configure LXC for Discord Bot
+  hosts: proxmox
+  become: true
+  vars:
+    lxc_id: 106
+    lxc_hostname: discord-bot
+    lxc_template: local:vztmpl/ubuntu-22.04-standard_20240501_amd64.tar.zst
+    lxc_storage: local-lvm
+    lxc_password: discordbot
+    lxc_bridge: vmbr0
+    lxc_ip: ''
+    lxc_cores: 2
+    lxc_memory: 1024
+    lxc_disk: 8
+  roles:
+    - create_lxc
+
+- name: Setup Discord Bot inside LXC
+  hosts: discord_bot
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    discord_token: "YOUR_TOKEN_HERE"
+    bot_repo: ""
+  roles:
+    - discord_bot
+
+- name: Notify via Discord Webhook
+  hosts: localhost
+  gather_facts: false
+  vars:
+    discordwebhook: "YOUR_DISCORD_WEBHOOK_URL"
+    notification_title: "Discord Bot Deployment"
+    embed_message: "Discord Bot LXC {{ lxc_hostname }} was created and configured."
+  roles:
+    - discord_notify
