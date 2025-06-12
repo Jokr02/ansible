@@ -1,8 +1,8 @@
-- name: Deploy Discord JobBot
+- name: Deploy Discord JobBot (structured)
   hosts: jobbot
   become: true
   vars:
-    jobbot_repo_url: "https://github.com/Jokr02/job_bot.git"
+    jobbot_repo_url: "https://github.com/Jokr02/discord-jobbot.git"
     jobbot_path: "/opt/discord-jobbot"
     jobbot_code_path: "/opt/discord-jobbot/code"
   roles:
