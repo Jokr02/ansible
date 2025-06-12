@@ -1,0 +1,13 @@
+[Unit]
+Description=Discord Bot Service
+After=network.target
+
+[Service]
+User={{ bot_user }}
+WorkingDirectory={{ bot_repo_dest }}
+ExecStart=/usr/bin/python3 {{ bot_repo_dest }}/main.py --token {{ bot_token }} --webhook {{ webhook_url }}
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
