@@ -30,8 +30,8 @@
   args:
     creates: "{{ jobbot_path }}/venv/bin/pip"
 
-#- name: Upgrade pip in venv
-#  command: "{{ jobbot_path }}/venv/bin/pip install --upgrade pip"
+- name: Upgrade pip in venv
+  command: "{{ jobbot_path }}/venv/bin/pip install --upgrade pip"
 
 - name: Install Python requirements
   pip:
