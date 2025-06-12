@@ -69,12 +69,15 @@
       [Install]
       WantedBy=multi-user.target
 
-- name: Reload systemd and enable the bot service
+- name: Reload systemd and enable/start the bot service
   systemd:
     daemon_reload: yes
     name: discord-jobbot
     enabled: yes
     state: started
+
+# ----------- HEALTHCHECK -----------
+
 - name: Gather RAM info
   command: free -h
   register: ram_info
@@ -95,13 +98,13 @@
       Content-Type: "application/json"
     body_format: json
     body:
-      content: |
+      content: >-
         ✅ **Discord JobBot erfolgreich deployed und gestartet**
         🖥 Host: {{ host_name.stdout }}
         🔁 Service-Status: {{ service_status.stdout | regex_replace('\n', ', ') }}
         💾 RAM:
         ```
-{{ ram_info.stdout }}
+        {{ ram_info.stdout }}
         ```
         📁 Arbeitsverzeichnis: {{ app_dir }}
   when: ERROR_WEBHOOK_URL | length > 0
@@ -118,7 +121,7 @@
       Content-Type: "application/json"
     body_format: json
     body:
-      content: |
+      content: >-
         🚨 **Achtung: Discord JobBot läuft NICHT korrekt!**
         🖥 Host: {{ host_name.stdout }}
         ❌ Status: {{ service_status.stdout | regex_replace('\n', ', ') }}
