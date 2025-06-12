@@ -1,0 +1,34 @@
+# roles/create_lxc/tasks/main.yml
+---
+- name: Ensure LXC template is available
+  command: pveam update
+  changed_when: false
+
+- name: Download LXC template if needed
+  command: "pveam download local {{ lxc_template }}"
+  args:
+    creates: "/var/lib/vz/template/cache/{{ lxc_template }}"
+
+- name: Create LXC container
+  command: >
+    pct create {{ lxc_id }} /var/lib/vz/template/cache/{{ lxc_template }}
+    -hostname {{ lxc_hostname }}
+    -storage local-lvm
+    -net0 name=eth0,bridge=vmbr0,ip=dhcp
+    -cores {{ lxc_cores }}
+    -memory {{ lxc_memory }}
+    -rootfs local-lvm:{{ lxc_disk }}
+    -features nesting=1
+    -unprivileged 1
+  args:
+    creates: "/etc/pve/lxc/{{ lxc_id }}.conf"
+
+- name: Start LXC container
+  command: pct start {{ lxc_id }}
+
+- name: Wait for container to become reachable
+  wait_for:
+    host: "{{ lxc_ip }}"
+    port: 22
+    delay: 5
+    timeout: 60
