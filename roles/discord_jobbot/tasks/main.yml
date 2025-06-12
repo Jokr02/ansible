@@ -1,0 +1,43 @@
+- name: Ensure git is installed
+  apt:
+    name: git
+    state: present
+    update_cache: true
+
+- name: Clone or update the JobBot repo
+  git:
+    repo: "{{ jobbot_repo_url }}"
+    dest: "{{ jobbot_path }}"
+    version: main
+    force: yes
+
+- name: Ensure virtualenv is present
+  apt:
+    name: python3-venv
+    state: present
+
+- name: Create virtual environment
+  command: python3 -m venv venv
+  args:
+    chdir: "{{ jobbot_path }}"
+  creates: "{{ jobbot_path }}/venv"
+
+- name: Install Python requirements
+  pip:
+    requirements: "{{ jobbot_path }}/requirements.txt"
+    virtualenv: "{{ jobbot_path }}/venv"
+
+- name: Deploy .env file from template
+  template:
+    src: env.j2
+    dest: "{{ jobbot_path }}/.env"
+    mode: "0600"
+
+- name: Start bot (nohup style)
+  shell: |
+    source venv/bin/activate
+    nohup python3 bot.py > bot.log 2>&1 &
+  args:
+    chdir: "{{ jobbot_path }}"
+  async: 10
+  poll: 0
