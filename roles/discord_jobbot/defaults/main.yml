@@ -1,15 +1,15 @@
 ---
+discord_bot_token: ""
+discord_channel_id: ""
+smtp_host: ""
+smtp_port: "587"
+smtp_user: ""
+smtp_password: ""
+sender_name: "JobBot"
+adzuna_app_id: ""
+adzuna_app_key: ""
+adzuna_country: "de"
+error_webhook_url: ""
+
 app_dir: /opt/discord-jobbot
 repo_url: https://github.com/Jokr02/job_bot.git
-
-DISCORD_BOT_TOKEN: ""
-DISCORD_CHANNEL_ID: ""
-SMTP_HOST: ""
-SMTP_PORT: "587"
-SMTP_USER: ""
-SMTP_PASSWORD: ""
-SENDER_NAME: "JobBot"
-ADZUNA_APP_ID: ""
-ADZUNA_APP_KEY: ""
-ADZUNA_COUNTRY: "de"
-ERROR_WEBHOOK_URL: ""
