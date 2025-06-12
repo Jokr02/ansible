@@ -75,3 +75,58 @@
     name: discord-jobbot
     enabled: yes
     state: started
+- name: Gather RAM info
+  command: free -h
+  register: ram_info
+
+- name: Get systemctl status summary of the JobBot
+  command: systemctl show -p ActiveState,SubState discord-jobbot
+  register: service_status
+
+- name: Get hostname
+  command: hostname
+  register: host_name
+
+- name: Send extended Healthcheck webhook to Discord
+  uri:
+    url: "{{ ERROR_WEBHOOK_URL }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      content: |
+        ✅ **Discord JobBot erfolgreich deployed und gestartet**
+        🖥 Host: {{ host_name.stdout }}
+        🔁 Service-Status: {{ service_status.stdout | regex_replace('\n', ', ') }}
+        💾 RAM:
+        ```
+{{ ram_info.stdout }}
+        ```
+        📁 Arbeitsverzeichnis: {{ app_dir }}
+  when: ERROR_WEBHOOK_URL | length > 0
+
+- name: Evaluate if JobBot systemd service is unhealthy
+  set_fact:
+    jobbot_unhealthy: "{{ 'inactive' in service_status.stdout or 'failed' in service_status.stdout or 'deactivating' in service_status.stdout }}"
+
+- name: Send ALERT webhook if JobBot service is unhealthy
+  uri:
+    url: "{{ ERROR_WEBHOOK_URL }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      content: |
+        🚨 **Achtung: Discord JobBot läuft NICHT korrekt!**
+        🖥 Host: {{ host_name.stdout }}
+        ❌ Status: {{ service_status.stdout | regex_replace('\n', ', ') }}
+        💡 Bitte prüfe mit:
+        ```
+        journalctl -u discord-jobbot
+        systemctl status discord-jobbot
+        ```
+  when:
+    - ERROR_WEBHOOK_URL | length > 0
+    - jobbot_unhealthy
