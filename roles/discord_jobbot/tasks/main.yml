@@ -109,7 +109,7 @@
 
 - name: Send extended Healthcheck webhook to Discord
   uri:
-    url: "{{ ERROR_WEBHOOK_URL }}"
+    url: "{{ error_webhook_url }}"
     method: POST
     headers:
       Content-Type: "application/json"
@@ -124,7 +124,7 @@
         {{ ram_info.stdout }}
         ```
         📁 Arbeitsverzeichnis: {{ app_dir }}
-  when: ERROR_WEBHOOK_URL | length > 0
+  when: error_webhook_url | length > 0
 
 - name: Evaluate if JobBot systemd service is unhealthy
   set_fact:
@@ -132,7 +132,7 @@
 
 - name: Send ALERT webhook if JobBot service is unhealthy
   uri:
-    url: "{{ ERROR_WEBHOOK_URL }}"
+    url: "{{ error_webhook_url }}"
     method: POST
     headers:
       Content-Type: "application/json"
@@ -148,5 +148,5 @@
         systemctl status discord-jobbot
         ```
   when:
-    - ERROR_WEBHOOK_URL | length > 0
+    - error_webhook_url | length > 0
     - jobbot_unhealthy
