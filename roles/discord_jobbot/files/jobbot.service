@@ -1,0 +1,13 @@
+[Unit]
+Description=Discord JobBot Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/discord-jobbot/code
+ExecStart=/opt/discord-jobbot/venv/bin/python3 /opt/discord-jobbot/code/bot.py
+Restart=on-failure
+EnvironmentFile=/opt/discord-jobbot/.env
+
+[Install]
+WantedBy=multi-user.target
