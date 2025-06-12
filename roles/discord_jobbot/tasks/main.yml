@@ -113,6 +113,7 @@
     method: POST
     headers:
       Content-Type: "application/json"
+    status_code: [200, 204]
     body_format: json
     body:
       content: >-
@@ -136,6 +137,7 @@
     method: POST
     headers:
       Content-Type: "application/json"
+    status_code: [200, 204]
     body_format: json
     body:
       content: >-
