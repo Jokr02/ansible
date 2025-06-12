@@ -8,6 +8,9 @@
       - libjpeg-dev
       - build-essential
     update_cache: yes
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
 
 - name: Ensure application directory exists
   file:
