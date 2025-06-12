@@ -18,11 +18,16 @@
     dest: "{{ jobbot_code_path }}"
     force: yes
 
-
 - name: Create virtual environment
   shell: python3 -m venv {{ jobbot_path }}/venv
   args:
     creates: "{{ jobbot_path }}/venv"
+
+- name: Install required Python packaging library
+  apt:
+    name: python3-packaging
+    state: present
+    update_cache: yes
 
 - name: Install Python requirements
   pip:
