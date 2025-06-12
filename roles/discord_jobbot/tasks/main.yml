@@ -28,12 +28,13 @@
   args:
     creates: "{{ app_dir }}/venv"
 
-- name: Install Python requirements in virtualenv
+- name: Install Python requirements if file exists
   pip:
     requirements: "{{ app_dir }}/requirements.txt"
     executable: "{{ app_dir }}/venv/bin/pip"
+  when: ansible.builtin.stat(path="{{ app_dir }}/requirements.txt").stat.exists
 
-- name: Install missing Python modules explicitly
+- name: Install required Python packages explicitly
   pip:
     name:
       - psutil
