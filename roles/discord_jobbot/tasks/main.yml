@@ -25,13 +25,13 @@
   args:
     creates: "{{ jobbot_path }}/venv"
 
-- name: Download get-pip.py
+- name: Download get-pip.py into venv folder
   get_url:
     url: https://bootstrap.pypa.io/get-pip.py
-    dest: /tmp/get-pip.py
+    dest: "{{ jobbot_path }}/venv/get-pip.py"
 
-- name: Install pip in venv using get-pip.py
-  command: "{{ jobbot_path }}/venv/bin/python3 /tmp/get-pip.py"
+- name: Install pip manually in venv
+  shell: "{{ jobbot_path }}/venv/bin/python3 {{ jobbot_path }}/venv/get-pip.py"
   args:
     creates: "{{ jobbot_path }}/venv/bin/pip"
 
