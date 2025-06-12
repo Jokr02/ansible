@@ -1,0 +1,5 @@
+bot_repo_url: "https://github.com/dein-user/dein-discord-bot.git"
+bot_repo_dest: "/opt/discord-bot"
+bot_user: "discordbot"
+bot_token: ""
+webhook_url: ""
