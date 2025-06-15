@@ -22,8 +22,8 @@
     src: /opt/stock-bot/github/bot.py
     dest: /opt/stock-bot/bot.py
     remote_src: yes
-    owner: stockbot
-    group: stockbot
+    owner: root
+    group: root
     mode: '0644'
 
 - name: Start stock-bot service
