@@ -1,6 +1,33 @@
-- name: Clone Discord JobBot repository
+---
+- name: Stop stock-bot service
+  systemd:
+    name: stock-bot
+    state: stopped
+
+- name: Ensure /opt/stock-bot/github exists
+  file:
+    path: /opt/stock-bot/github
+    state: directory
+
+- name: Clone or update stock-bot repo
   git:
     repo: "{{ repo_url }}"
-    dest: "{{ app_dir }}"
-    version: main
+    dest: /opt/stock-bot/github
+    version: "{{ repo_version }}"
+    update: yes
     force: yes
+
+- name: Copy bot.py from GitHub folder to live path
+  copy:
+    src: /opt/stock-bot/github/bot.py
+    dest: /opt/stock-bot/bot.py
+    remote_src: yes
+    owner: stockbot
+    group: stockbot
+    mode: '0644'
+
+- name: Start stock-bot service
+  systemd:
+    name: stock-bot
+    state: started
+    enabled: yes
