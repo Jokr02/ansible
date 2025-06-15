@@ -1,0 +1,8 @@
+- name: Deploy Discord stock-bot (structured)
+  hosts: stock-bot
+  become: true
+  vars:
+    stock-bot_repo_url: "https://github.com/Jokr02/stock-bot.git"
+    stock-bot_path: "/opt/stock-bot/github"
+  roles:
+    - discord_stock-bot
