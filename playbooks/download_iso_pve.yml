@@ -1,5 +1,10 @@
 ---
 - hosts: proxmox
   become: true
+  vars:
+    iso_dir: "/var/lib/vz/template/iso"
+    lxc_dir: "/var/lib/vz/template/cache"
+    ubuntu_base_url: "https://releases.ubuntu.com/"
+    debian_base_url: "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"
   roles:
     - download_proxmox_images
