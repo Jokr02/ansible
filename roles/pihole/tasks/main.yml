@@ -41,15 +41,15 @@
             - ./etc-dnsmasq.d:/etc/dnsmasq.d
           cap_add:
             - NET_ADMIN
-{% if use_unbound %}
-        unbound:
-          image: mvance/unbound:latest
-          container_name: unbound
-          restart: unless-stopped
-          network_mode: host
-          volumes:
-            - ./unbound:/opt/unbound/etc/unbound
-{% endif %}
+      {% if use_unbound %}
+              unbound:
+                image: mvance/unbound:latest
+                container_name: unbound
+                restart: unless-stopped
+                network_mode: host
+                volumes:
+                  - ./unbound:/opt/unbound/etc/unbound
+      {% endif %}
 
 
 # 3) Compose starten (alternativ: community.docker.docker_compose_v2 Modul)
