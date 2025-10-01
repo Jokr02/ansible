@@ -22,16 +22,14 @@
     dest: "{{ containers_root | default('/opt/containers') }}/pihole/docker-compose.yml"
     mode: "0644"
     content: |
+      version: "3.9"
+
       services:
         pihole:
           image: pihole/pihole:latest
           container_name: pihole
           restart: unless-stopped
           network_mode: host
-          {% if use_unbound %}
-          depends_on:
-            - unbound
-          {% endif %}
           environment:
             TZ: "{{ timezone }}"
             WEBPASSWORD: "{{ pihole_webpassword }}"
@@ -43,17 +41,16 @@
             - ./etc-dnsmasq.d:/etc/dnsmasq.d
           cap_add:
             - NET_ADMIN
-      {% if use_unbound %}
+{% if use_unbound %}
         unbound:
           image: mvance/unbound:latest
           container_name: unbound
           restart: unless-stopped
           network_mode: host
-          # Keine 'command' Zeile nötig – das Image startet Unbound selbst
-          # Optional: eigenes Config-Volume, falls du custom files nutzt
-          # volumes:
-          #   - ./unbound:/opt/unbound/etc/unbound
-      {% endif %}
+          volumes:
+            - ./unbound:/opt/unbound/etc/unbound
+{% endif %}
+
 
 # 3) Compose starten (alternativ: community.docker.docker_compose_v2 Modul)
 - name: Pull latest images
