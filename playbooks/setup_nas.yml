@@ -1,0 +1,17 @@
+---
+- name: Setup NAS with OMV + Docker + Basisdienste
+  hosts: dc-nas-01
+  become: true
+
+  roles:
+    - role: omv
+      tags: [omv]
+
+    - role: docker
+      tags: [docker]
+
+    - role: pihole
+      tags: [pihole]
+
+    - role: twingate
+      tags: [twingate]
