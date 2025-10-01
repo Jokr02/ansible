@@ -17,3 +17,12 @@ ubuntu_iso_filenames:
   '20.04': "ubuntu-20.04.6-live-server-amd64.iso"
   '18.04': "ubuntu-18.04.6-live-server-amd64.iso"
   '16.04': "ubuntu-16.04.7-server-amd64.iso"
+
+  # Twingate
+twingate_network: "habichtsfang"
+
+# Pi-hole
+pihole_ip: "192.168.1.53"
+use_unbound: true
+pihole_dns_1: "1.1.1.1"
+pihole_dns_2: "9.9.9.9"
