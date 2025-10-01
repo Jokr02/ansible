@@ -28,5 +28,6 @@
 - name: Deploy/Update Pi-hole stack
   community.docker.docker_compose_v2:
     project_src: "{{ containers_root | default('/opt/containers') }}/pihole"
-    pull: true
+    pull: always
     state: present
+
