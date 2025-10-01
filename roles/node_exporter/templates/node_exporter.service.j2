@@ -1,0 +1,32 @@
+[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ node_exporter_user }}
+Group={{ node_exporter_group }}
+EnvironmentFile=-/etc/default/node_exporter
+ExecStart={{ node_exporter_binary_dir }}/node_exporter $NODE_EXPORTER_OPTS
+Restart=on-failure
+RestartSec=2
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths={{ node_exporter_textfile_dir }}
+
+[Install]
+WantedBy=multi-user.target
