@@ -1,0 +1,27 @@
+[Unit]
+Description=AutoASPM PCIe Power Management
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+{% if autoaspm_service_type == "oneshot" -%}
+Type=oneshot
+RemainAfterExit=yes
+{% else -%}
+Type=simple
+Restart=on-failure
+RestartSec=3
+{% endif -%}
+User={{ autoaspm_service_user }}
+Group={{ autoaspm_service_group }}
+WorkingDirectory={{ autoaspm_install_dir }}/pkgs
+ExecStart={{ autoaspm_python }} {{ autoaspm_install_dir }}/pkgs/autoaspm.py
+
+# Härtung (minimal, da Root nötig ist)
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
