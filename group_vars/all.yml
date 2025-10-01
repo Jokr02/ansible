@@ -25,3 +25,6 @@ twingate_network: "habichtsfang"
 pihole_ip: "192.168.1.53"
 use_unbound: true
 pihole_dns_1: "9.9.9.9"
+
+# inventory/group_vars/all.yml
+containers_root: "/opt/containers"
