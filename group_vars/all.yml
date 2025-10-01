@@ -24,5 +24,4 @@ twingate_network: "habichtsfang"
 # Pi-hole
 pihole_ip: "192.168.1.53"
 use_unbound: true
-pihole_dns_1: "1.1.1.1"
-pihole_dns_2: "9.9.9.9"
+pihole_dns_1: "9.9.9.9"
