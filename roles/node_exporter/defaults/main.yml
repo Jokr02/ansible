@@ -1,0 +1,11 @@
+node_exporter_version: "1.8.2"
+node_exporter_arch: "linux-amd64"  # ggf. linux-arm64
+node_exporter_user: "nodeexp"
+node_exporter_group: "nodeexp"
+node_exporter_binary_dir: "/usr/local/bin"
+node_exporter_opts: >
+  --web.listen-address=:9100
+  --web.telemetry-path=/metrics
+  --collector.textfile.directory=/var/lib/node_exporter/textfile
+node_exporter_textfile_dir: "/var/lib/node_exporter/textfile"
+node_exporter_download_url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.{{ node_exporter_arch }}.tar.gz"
