@@ -1,3 +1,6 @@
 containers_root: "/opt/containers"
 timezone: "Europe/Berlin"
-pihole_ip: "192.168.178.53"
+pihole_ip: "{{ ansible_default_ipv4.address }}"
+use_unbound: true
+pihole_dns_1: "9.9.9.9"
+
