@@ -1,23 +1,41 @@
 ---
-- name: Deploy Twingate Connector
-  ansible.builtin.copy:
+# 1) Verzeichnisse
+- name: Ensure containers_root exists
+  ansible.builtin.file:
+    path: "{{ containers_root }}"
+    state: directory
+    mode: "0755"
+
+- name: Create Twingate directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ containers_root }}/twingate"
+    - "{{ containers_root }}/twingate/etc-twingate"
+
+# 2) Validate required vars (fail fast, aber mit klarer Meldung)
+- name: Assert required Twingate vars are set
+  ansible.builtin.assert:
+    that:
+      - twingate_network | length > 0
+      - twingate_access_token | length > 0
+      - twingate_refresh_token | length > 0
+    fail_msg: >
+      Missing required Twingate vars. Set them via Semaphore (Extra Vars/Secrets) or host_vars:
+      twingate_network, twingate_access_token, twingate_refresh_token.
+
+# 3) Compose schreiben
+- name: Render docker-compose.yml for Twingate
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
     dest: "{{ containers_root }}/twingate/docker-compose.yml"
     mode: "0644"
-    content: |
-      services:
-        twingate:
-          image: twingate/connector:latest
-          container_name: twingate
-          restart: unless-stopped
-          environment:
-            TWINGATE_NETWORK: "{{ twingate_network }}"
-            TWINGATE_ACCESS_TOKEN: "{{ twingate_access_token }}"
-            TWINGATE_REFRESH_TOKEN: "{{ twingate_refresh_token }}"
-          volumes:
-            - ./etc-twingate:/etc/twingate
-          network_mode: bridge
 
-- name: Compose up Twingate
-  ansible.builtin.shell: docker compose up -d
-  args:
-    chdir: "{{ containers_root }}/twingate"
+# 4) Deploy (idempotent)
+- name: Deploy/Update Twingate stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ containers_root }}/twingate"
+    pull: always
+    state: present
