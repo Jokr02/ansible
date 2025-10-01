@@ -1,0 +1,60 @@
+---
+- name: Ensure required packages are present
+  ansible.builtin.apt:
+    name: [ python3, unzip, ca-certificates, wget ]
+    state: present
+    update_cache: yes
+
+- name: Create install directory
+  ansible.builtin.file:
+    path: "{{ autoaspm_install_dir }}"
+    state: directory
+    owner: "{{ autoaspm_service_user }}"
+    group: "{{ autoaspm_service_group }}"
+    mode: "0755"
+
+# Wir vermeiden git-Abhängigkeit und ziehen ein Zip-Archiv
+- name: Download autoaspm archive
+  ansible.builtin.get_url:
+    url: "https://github.com/notthebee/autoaspm/archive/refs/heads/{{ autoaspm_branch }}.zip"
+    dest: "/tmp/autoaspm-{{ autoaspm_branch }}.zip"
+    mode: "0644"
+  register: autoaspm_zip
+
+- name: Unarchive autoaspm
+  ansible.builtin.unarchive:
+    src: "/tmp/autoaspm-{{ autoaspm_branch }}.zip"
+    dest: "{{ autoaspm_install_dir }}"
+    remote_src: true
+    extra_opts: [ "-o" ]  # overwrite
+  register: autoaspm_unzip
+
+- name: Normalize folder name
+  ansible.builtin.command: >
+    bash -lc "shopt -s nullglob && for d in {{ autoaspm_install_dir }}/autoaspm-*; do
+    if [ -d \"$d\" ]; then rsync -a --delete \"$d/\" {{ autoaspm_install_dir }}/; rm -rf \"$d\"; fi; done"
+  changed_when: false
+
+- name: Ensure ownership and perms
+  ansible.builtin.file:
+    path: "{{ autoaspm_install_dir }}"
+    state: directory
+    owner: "{{ autoaspm_service_user }}"
+    group: "{{ autoaspm_service_group }}"
+    recurse: true
+
+- name: Deploy systemd unit for autoaspm
+  ansible.builtin.template:
+    src: autoaspm.service.j2
+    dest: /etc/systemd/system/autoaspm.service
+    mode: "0644"
+
+- name: systemd daemon-reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start autoaspm
+  ansible.builtin.systemd:
+    name: autoaspm
+    enabled: true
+    state: started
