@@ -1,0 +1,36 @@
+---
+- name: Deploy Pi-hole
+  ansible.builtin.copy:
+    dest: "{{ containers_root }}/pihole/docker-compose.yml"
+    mode: "0644"
+    content: |
+      services:
+        pihole:
+          image: pihole/pihole:latest
+          container_name: pihole
+          restart: unless-stopped
+          network_mode: host
+          environment:
+            TZ: "{{ timezone }}"
+            WEBPASSWORD: "{{ pihole_webpassword }}"
+            DNSMASQ_USER: "root"
+            FTLCONF_LOCAL_IPV4: "{{ pihole_ip }}"
+            PIHOLE_DNS_: "{{ pihole_dns_1 }};{{ pihole_dns_2 }}"{% if use_unbound %};127.0.0.1#5335{% endif %}
+          volumes:
+            - ./etc-pihole:/etc/pihole
+            - ./etc-dnsmasq.d:/etc/dnsmasq.d
+          cap_add:
+            - NET_ADMIN
+      {% if use_unbound %}
+        unbound:
+          image: mvance/unbound:latest
+          container_name: unbound
+          restart: unless-stopped
+          network_mode: host
+          command: ["-q"]
+      {% endif %}
+
+- name: Compose up pihole
+  ansible.builtin.shell: docker compose up -d
+  args:
+    chdir: "{{ containers_root }}/pihole"
