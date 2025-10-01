@@ -1,7 +1,4 @@
 ---
-- name: Gather system facts
-  ansible.builtin.setup:
-
 - name: Update APT package index
   ansible.builtin.apt:
     update_cache: yes
