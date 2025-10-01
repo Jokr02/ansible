@@ -1,1 +1,2 @@
 containers_root: "/opt/containers"
+timezone: "Europe/Berlin"
