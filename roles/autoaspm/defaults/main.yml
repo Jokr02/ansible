@@ -1,0 +1,6 @@
+autoaspm_install_dir: "/opt/autoaspm"
+autoaspm_branch: "master"   # oder z.B. "main" / bestimmter Tag
+autoaspm_service_user: "root"   # braucht Root, um PCIe ASPM zu setzen
+autoaspm_service_group: "root"
+autoaspm_service_type: "oneshot"  # "oneshot" = 1x beim Boot. Alternativ "simple" für dauerhaften Dienst.
+autoaspm_python: "/usr/bin/python3"
