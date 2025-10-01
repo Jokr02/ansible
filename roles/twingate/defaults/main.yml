@@ -1,0 +1,6 @@
+# Fallbacks – werden von Semaphore/host_vars überschrieben
+containers_root: "/opt/containers"
+twingate_network: ""         # z.B. "mein-netz"  (Pflicht)
+twingate_access_token: ""    # Secret (Pflicht)
+twingate_refresh_token: ""   # Secret (Pflicht)
+twingate_labels: []          # optional, z.B. ["dc-nas-01"]
