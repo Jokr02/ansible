@@ -1,21 +1,41 @@
 ---
-- name: Add Docker apt keyring
-  ansible.builtin.shell: |
-    install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
-    chmod a+r /etc/apt/keyrings/docker.asc
-  args:
-    creates: /etc/apt/keyrings/docker.asc
-
-- name: Add Docker repo (bookworm)
-  ansible.builtin.copy:
-    dest: /etc/apt/sources.list.d/docker.list
-    content: |
-      deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable
-
-- name: Install Docker engine
+# 1) Basis-Pakete für das Hinzufügen von Repos/Keys
+- name: Install prerequisites for Docker repo
   ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
     update_cache: yes
+
+# 2) Keyring-Verzeichnis sicherstellen
+- name: Ensure /etc/apt/keyrings exists
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+# 3) Docker GPG-Key idempotent ablegen
+- name: Add Docker apt GPG key (asc)
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/debian/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: "0644"
+    force: true
+
+# 4) Docker-Repository für Debian 12 (bookworm)
+#    Falls deine Architektur ARM ist, arch anpassen (z. B. arm64).
+- name: Add Docker apt repository (bookworm)
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian bookworm stable"
+    filename: docker
+    state: present
+    update_cache: yes
+
+# 5) Docker Engine + Compose installieren
+- name: Install Docker engine & plugins
+  ansible.builtin.apt:
     name:
       - docker-ce
       - docker-ce-cli
@@ -24,13 +44,15 @@
       - docker-compose-plugin
     state: present
 
-- name: Ensure docker running
+# 6) Docker Dienst aktivieren
+- name: Ensure docker service is enabled and running
   ansible.builtin.service:
     name: docker
     state: started
     enabled: true
 
-- name: Create containers root
+# 7) Verzeichnis für Compose-Projekte
+- name: Create containers root directory
   ansible.builtin.file:
     path: "{{ containers_root }}"
     state: directory
