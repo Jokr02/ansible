@@ -1,12 +1,11 @@
 ---
-# Sicherstellen, dass das Basisverzeichnis existiert
+# 1) Basisverzeichnisse
 - name: Ensure containers_root exists
   ansible.builtin.file:
     path: "{{ containers_root | default('/opt/containers') }}"
     state: directory
     mode: "0755"
 
-# Pi-hole spezifische Verzeichnisse erstellen
 - name: Create Pi-hole directories
   ansible.builtin.file:
     path: "{{ item }}"
@@ -17,7 +16,7 @@
     - "{{ containers_root | default('/opt/containers') }}/pihole/etc-pihole"
     - "{{ containers_root | default('/opt/containers') }}/pihole/etc-dnsmasq.d"
 
-# docker-compose.yml bereitstellen
+# 2) docker-compose.yml schreiben (ohne 'command' bei unbound)
 - name: Deploy Pi-hole docker-compose.yml
   ansible.builtin.copy:
     dest: "{{ containers_root | default('/opt/containers') }}/pihole/docker-compose.yml"
@@ -29,6 +28,10 @@
           container_name: pihole
           restart: unless-stopped
           network_mode: host
+          {% if use_unbound %}
+          depends_on:
+            - unbound
+          {% endif %}
           environment:
             TZ: "{{ timezone }}"
             WEBPASSWORD: "{{ pihole_webpassword }}"
@@ -46,10 +49,18 @@
           container_name: unbound
           restart: unless-stopped
           network_mode: host
-          command: ["-q"]
+          # Keine 'command' Zeile nötig – das Image startet Unbound selbst
+          # Optional: eigenes Config-Volume, falls du custom files nutzt
+          # volumes:
+          #   - ./unbound:/opt/unbound/etc/unbound
       {% endif %}
 
-# Compose-Projekt starten
+# 3) Compose starten (alternativ: community.docker.docker_compose_v2 Modul)
+- name: Pull latest images
+  ansible.builtin.shell: docker compose pull
+  args:
+    chdir: "{{ containers_root | default('/opt/containers') }}/pihole"
+
 - name: Bring up Pi-hole stack
   ansible.builtin.shell: docker compose up -d
   args:
