@@ -1,51 +1,46 @@
 ---
-- name: Update NAS and send Discord notification
-  hosts: dc-nas-01
-  become: true
+- name: Gather system facts
+  ansible.builtin.setup:
 
-  tasks:
-    - name: Gather system facts
-      ansible.builtin.setup:
+- name: Update APT package index
+  ansible.builtin.apt:
+    update_cache: yes
 
-    - name: Update APT package index
-      ansible.builtin.apt:
-        update_cache: yes
+- name: Upgrade all packages (dist-upgrade)
+  ansible.builtin.apt:
+    upgrade: dist
+  register: upgrade_result
 
-    - name: Upgrade all packages (dist-upgrade)
-      ansible.builtin.apt:
-        upgrade: dist
-      register: upgrade_result
+- name: Autoremove unused packages
+  ansible.builtin.apt:
+    autoremove: yes
+  when: upgrade_result.changed
 
-    - name: Autoremove unused packages
-      ansible.builtin.apt:
-        autoremove: yes
-      when: upgrade_result.changed
-
-    - name: Send Discord notification
-      ansible.builtin.uri:
-        url: "{{ discordwebhook }}"
-        method: POST
-        headers:
-          Content-Type: "application/json"
-        body: |
+- name: Send Discord notification
+  ansible.builtin.uri:
+    url: "{{ discordwebhook }}"
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    body: |
+      {
+        "username": "NAS Update",
+        "embeds": [
           {
-            "username": "NAS Update",
-            "embeds": [
-              {
-                "title": "✅ NAS Updated",
-                "color": 65280,
-                "fields": [
-                  {"name": "Hostname", "value": "{{ inventory_hostname }}", "inline": true},
-                  {"name": "Kernel", "value": "{{ ansible_kernel }}", "inline": true},
-                  {"name": "Changes Applied", "value": "{{ 'Yes' if upgrade_result.changed else 'No' }}", "inline": true}
-                ],
-                "timestamp": "{{ ansible_date_time.iso8601 }}"
-              }
-            ]
+            "title": "✅ NAS Updated",
+            "color": 65280,
+            "fields": [
+              {"name": "Hostname", "value": "{{ inventory_hostname }}", "inline": true},
+              {"name": "Kernel", "value": "{{ ansible_kernel }}", "inline": true},
+              {"name": "Changes Applied", "value": "{{ 'Yes' if upgrade_result.changed else 'No' }}", "inline": true}
+            ],
+            "timestamp": "{{ ansible_date_time.iso8601 }}"
           }
-        body_format: json
-        status_code: 204
-      delegate_to: localhost
-      run_once: true
-      ignore_errors: true
-      become: false
+        ]
+      }
+    body_format: json
+    status_code: 204
+  delegate_to: localhost
+  run_once: true
+  ignore_errors: true
+  become: false
