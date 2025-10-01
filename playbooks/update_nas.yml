@@ -1,0 +1,7 @@
+---
+- name: Update NAS with Snapshots and Discord Notification
+  hosts: dc-nas-01
+  become: true
+
+  roles:
+    - nas_update
