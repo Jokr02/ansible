@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  {{ cadvisor_container_name }}:
+    image: {{ cadvisor_image }}
+    container_name: {{ cadvisor_container_name }}
+    restart: unless-stopped
+    ports:
+      - "{{ cadvisor_port }}:8080"
+    volumes:
+{% if cadvisor_mount_rootfs %}
+      - /:/rootfs:ro
+{% endif %}
+{% if cadvisor_mount_varrun %}
+      - /var/run:/var/run:ro
+{% endif %}
+{% if cadvisor_mount_sys %}
+      - /sys:/sys:ro
+{% endif %}
+{% if cadvisor_mount_dockerlib %}
+      - /var/lib/docker/:/var/lib/docker:ro
+{% endif %}
+{% if cadvisor_mount_disk %}
+      - /dev/disk/:/dev/disk:ro
+{% endif %}
+{% if cadvisor_mount_cgroup %}
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+{% endif %}
+    labels:
+{% for k, v in cadvisor_labels.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
