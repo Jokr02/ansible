@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  {{ pihole_exporter_container_name }}:
+    image: {{ pihole_exporter_image }}
+    container_name: {{ pihole_exporter_container_name }}
+    restart: unless-stopped
+    ports:
+      - "{{ pihole_exporter_port }}:9617"
+    environment:
+      PIHOLE_HOSTNAME: "{{ pihole_url }}"
+      PIHOLE_API_TOKEN: "{{ pihole_api_token }}"
+      INTERVAL: "{{ pihole_scrape_interval }}"
+      PORT: "9617"
+      TZ: "{{ timezone | default('Europe/Berlin') }}"
+    labels:
+{% for k, v in pihole_exporter_labels.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
