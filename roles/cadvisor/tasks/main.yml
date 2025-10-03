@@ -1,0 +1,18 @@
+---
+- name: Ensure cadvisor directory exists
+  ansible.builtin.file:
+    path: "{{ containers_root }}/cadvisor"
+    state: directory
+    mode: "0755"
+
+- name: Render docker-compose.yml for cAdvisor
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ containers_root }}/cadvisor/docker-compose.yml"
+    mode: "0644"
+
+- name: Deploy/Update cAdvisor stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ containers_root }}/cadvisor"
+    pull: always
+    state: present
