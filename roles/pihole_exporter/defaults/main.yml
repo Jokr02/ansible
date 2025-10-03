@@ -1,0 +1,14 @@
+containers_root: "/opt/containers"
+
+# Exporter Container
+pihole_exporter_image: "ekofr/pihole-exporter:latest"
+pihole_exporter_container_name: "pihole-exporter"
+pihole_exporter_port: 9617                # /metrics Endpoint
+
+# Verbindung zu deinem Pi-hole
+pihole_url: "http://127.0.0.1"            # falls Exporter auf demselben Host wie Pi-hole läuft
+pihole_api_token: ""                      # <- in Semaphore/host_vars setzen!
+pihole_scrape_interval: "30s"             # wie oft der Exporter Pi-hole pollt
+
+# Optional Labels (Traefik etc.)
+pihole_exporter_labels: {}
