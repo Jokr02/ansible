@@ -1,0 +1,6 @@
+---
+- name: Deploy cAdvisor on NAS
+  hosts: dc-nas-01
+  become: true
+  roles:
+    - cadvisor
