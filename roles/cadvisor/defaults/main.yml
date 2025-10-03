@@ -1,0 +1,18 @@
+# Basis
+containers_root: "/opt/containers"
+
+# Container
+cadvisor_image: "gcr.io/cadvisor/cadvisor:latest"
+cadvisor_container_name: "cadvisor"
+cadvisor_port: 8080
+
+# cgroup v2 (Debian 12 nutzt v2) – Mounts aktiv lassen
+cadvisor_mount_rootfs: true
+cadvisor_mount_varrun: true
+cadvisor_mount_sys: true
+cadvisor_mount_dockerlib: true
+cadvisor_mount_disk: true
+cadvisor_mount_cgroup: true
+
+# Optional: zusätzliche Docker labels (Traefik etc.)
+cadvisor_labels: {}
